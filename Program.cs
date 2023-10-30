@@ -1,23 +1,41 @@
 using System;
 using System.IO;
 
-// Path & EnableRaisingEvents = TRUE
+// add Dispatcher
+// dispose instance
+
 namespace FileWatcher
 {
     class Program
     {
         static void Main(string[] args)
         {
+            Dispatcher changeDispatcher = null;
+            ManualResetEvent dispatcherStarted = new ManualResetEvent(false);
+            Action changeThreadHandler = () => {
+                changeDispatcher = Dispatcher.CurrentDispatcher;
+                changeDispatcherStarted.Set();
+                Dispatcher.Run();
+            };
+
+            new Thread(() => changeThreadHandler()) { IsBackground = true }.Start();
+            changeDispatcherStarted.WaitOne();
+
             FileSystemWatcher watchDog = new FileSystemWatcher(@"C:\tmp\watchdog");
 
             watchDog.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName;
 
-            watchDog.Created += OnCreated;
+            watchDog.Created += (sender, e) => changeDispatcher.BeginInvoke(new Action(() => OnCreated(sender, e)));
             watchDog.Filter = "*.*";
 
+            // buffer in bytes
+            watchDog.InternalBufferSize = 1024 * 32
             watchDog.EnableRaisingEvents = true;
 
             while (Console.Read() != 'q') ;
+
+            watchDog.Dispose();
+            changeDispatcher.BeginInvokeShutdown(DispatcherPriority.Normal);
         }
 
         
