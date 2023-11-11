@@ -10,39 +10,46 @@ namespace FileWatcher
     {
         static void Main(string[] args)
         {
-            Dispatcher changeDispatcher = null;
-            ManualResetEvent dispatcherStarted = new ManualResetEvent(false);
-            Action changeThreadHandler = () => {
-                changeDispatcher = Dispatcher.CurrentDispatcher;
-                changeDispatcherStarted.Set();
-                Dispatcher.Run();
-            };
+            WatchDog monitor = new WatchDog(@"C:\tmp\watchdog\");
 
-            new Thread(() => changeThreadHandler()) { IsBackground = true }.Start();
-            changeDispatcherStarted.WaitOne();
 
-            FileSystemWatcher watchDog = new FileSystemWatcher(@"C:\tmp\watchdog");
+            while (Console.ReadLine() != "lol")
+            {
+                Console.ReadLine();
+            }
+            //     Dispatcher changeDispatcher = null;
+            //     ManualResetEvent dispatcherStarted = new ManualResetEvent(false);
+            //     Action changeThreadHandler = () => {
+            //         changeDispatcher = Dispatcher.CurrentDispatcher;
+            //         changeDispatcherStarted.Set();
+            //         Dispatcher.Run();
+            //     };
 
-            watchDog.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName;
+            //     new Thread(() => changeThreadHandler()) { IsBackground = true }.Start();
+            //     changeDispatcherStarted.WaitOne();
 
-            watchDog.Created += (sender, e) => changeDispatcher.BeginInvoke(new Action(() => OnCreated(sender, e)));
-            watchDog.Filter = "*.*";
+            //     FileSystemWatcher watchDog = new FileSystemWatcher(@"C:\tmp\watchdog");
 
-            // buffer in bytes
-            watchDog.InternalBufferSize = 1024 * 32
-            watchDog.EnableRaisingEvents = true;
+            //     watchDog.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.FileName;
 
-            while (Console.Read() != 'q') ;
+            //     watchDog.Created += (sender, e) => changeDispatcher.BeginInvoke(new Action(() => OnCreated(sender, e)));
+            //     watchDog.Filter = "*.*";
 
-            watchDog.Dispose();
-            changeDispatcher.BeginInvokeShutdown(DispatcherPriority.Normal);
-        }
+            //     // buffer in bytes
+            //     watchDog.InternalBufferSize = 1024 * 32
+            //     watchDog.EnableRaisingEvents = true;
 
-        
-        public static void OnCreated(object sender, FileSystemEventArgs events)
-        { 
-            // OnCreated Event Logic
-            Console.WriteLine($"Created : {events.Name}");
+            //     while (Console.Read() != 'q') ;
+
+            //     watchDog.Dispose();
+            //     changeDispatcher.BeginInvokeShutdown(DispatcherPriority.Normal);
+            // }
+
+
+            // public static void OnCreated(object sender, FileSystemEventArgs events)
+            // { 
+            //     // OnCreated Event Logic
+            //     Console.WriteLine($"Created : {events.Name}");
         }
     }
 }
